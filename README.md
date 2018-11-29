@@ -35,6 +35,9 @@ The icon must be:
 Example:  
  ![example](./icon.png)
 
+### components.xml
+Integration may require some configuration changes. Configuration is standard part of integration and stored in components.xml file. Configuration changes will be applied as part of integration installation.
+
 ## Version
 Versions for integration match to the repository tags. If there are no tags, then the Master branch is used.
  
