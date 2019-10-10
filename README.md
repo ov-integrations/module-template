@@ -8,15 +8,22 @@ The Repository Name matches to Integration Name.
 ## Content
 
 ### .integration
-.integration - Config file which contains the command that runs the integration.
+.integration - config file which contains:
+- command - that runs the integration
+- settings_file_name - that contains additional settings
+- default_schedule - that contains default schedule (must be specified in the quartz cron expression format)
+- read_from_stdout - checkbox that indicates that STDOUT is added to Log Trackor
 
 Example:
 ```
 command = python3 ./SampleIntegration.py
+settings_file_name = settings
+default_schedule = 0 0 0/1 * * ?
+read_from_stdout = false
 ```
 
-### SettingsFileTemplate.integration
-SettingsFileTemplate.integration is a template for Settings File. Integration uses SettingsFile, for example, to get username, password, URL, type. The content and structure of SettingsFileTemplate.integration may vary depending on the integration requirements.
+### settings
+settings - a file with settings, the name of which can be anything. Integration uses settings file, for example, to get username, password, URL, type. The content and structure of settings file may vary depending on the integration requirements.
 
 Example:
 ```
@@ -49,6 +56,6 @@ The following fields are populated during installation:
 - Repository Name -> Integration Name
 - Repository Description -> Description
 - Repository URL -> Repository URL
-- .integration -> Command
+- .integration -> command, settings_file_name, default_schedule, read_from_stdout
 - SettingsFileTemplate.integration -> Settings File
 - Selected Tag -> Version
