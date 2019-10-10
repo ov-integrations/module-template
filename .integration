@@ -1,1 +1,4 @@
 command = ./executable_file.sh
+settings_file_name = settings
+default_schedule = 0 0 0/1 * * ?
+read_from_stdout = false
