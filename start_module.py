@@ -25,17 +25,17 @@ try:
 except Exception as exceptiion:
     raise Exception(f'Incorrect value in the settings file\n{str(exceptiion)}') from exceptiion
 
-with open('ihub_parameters.json', 'rb') as module_params:
-    module_params_data = json.loads(module_params.read().decode('utf-8'))
+with open('ihub_parameters.json', 'rb') as module_run:
+    module_run_data = json.loads(module_run.read().decode('utf-8'))
 
 module_log = IntegrationLog(
-    module_params_data['processId'], 
+    module_run_data['processId'], 
     settings_data['ovUrl'], 
     settings_data['ovAccessKey'], 
     settings_data['ovSecretKey'], 
     None, 
     True, 
-    module_params_data['logLevel'])
+    module_run_data['logLevel'])
 
 module = Module(module_log, settings_data)
 
