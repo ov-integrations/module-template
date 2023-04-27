@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- It makes sense to start the installation with trackor types.
+     We recommend splitting components into separate files by type and naming them accordingly, ie:
+     Menu.xml, Security-Roles.xml, Rules.xml, Imports.xml, etc.
+     
+     Make sure to add new trackor types to the tree by adjusting the import mode in XML:
+     <XITOR_TYPES impMode="IMPORT_RELATIONS">
+
+     Other modes supported for Trackor Types: DONT_ASSIGN_TO_TREE, ASSIGN_TO_ROOT, IMPORT_RELATIONS, IMPORT_RELATIONS_ONLY
+ -->
+<COMPONENTS>
+    <XITOR_TYPES impMode="IMPORT_RELATIONS">
+        <XITOR_TYPES_ITEM>
+        </XITOR_TYPES_ITEM>
+    </XITOR_TYPES>
+</COMPONENTS>
