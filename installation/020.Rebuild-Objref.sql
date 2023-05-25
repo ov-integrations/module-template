@@ -7,6 +7,7 @@
 --All changes will be committed automatically on script completion
 
 begin
+    pkg_objref.validate_rebuild_id_pkg_and_types();
     pkg_objref.rebuild_id_pkg_and_types();
     dbms_output.put_line('Object referencies were rebuilt');
 end;
