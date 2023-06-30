@@ -1,6 +1,6 @@
 It is recommended to combine all related OneVizion configuration objects into the single `Components Package`.
 
-All configuration object names should be prefixed with module the unique prefix to avoid naming collisions with existing configuration or installed modules during the deployment.
+All configuration object names should be prefixed with the unique prefix to avoid naming collisions with existing configuration or installed modules during the deployment.
 Start prefix with `VHM` (VizionHub Module), i.e. `VHMBI` for the `BI Tables` module, `VHMREQ` for the `Requirements` module.
 
 For example, names of Trackor Types related to the BI Tables module: `VHMBI_FIELD`, `VHMBI_TABLE`, though component labels do not need to include any prefixes, as well as Config Field names as they queue by Trackor Type.
