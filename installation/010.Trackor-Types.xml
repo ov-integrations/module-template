@@ -7,6 +7,13 @@
      <XITOR_TYPES impMode="IMPORT_RELATIONS">
 
      Other modes supported for Trackor Types: DONT_ASSIGN_TO_TREE, ASSIGN_TO_ROOT, IMPORT_RELATIONS, IMPORT_RELATIONS_ONLY
+
+     Currently, module dependencies are not supported (i.e. one module can't require another one to be installed).
+     To archive this capability module developer should provide a list of dependencies in the module`s readme and rely 
+     on the existence of certain entities (Trackor Types, Fields, etc).
+     Another approach, which works with generic parts of config (for example "Users" Trackor Type), is to include 
+     minimally required entities to this module. Make sure, if "Users" Trackor Type already exists, 
+     installation of the module will not break it, at maximum, we can add new fields and relations.
  -->
 <COMPONENTS>
     <XITOR_TYPES impMode="IMPORT_RELATIONS">
