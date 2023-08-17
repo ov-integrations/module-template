@@ -8,6 +8,13 @@
 
      Other modes supported for Trackor Types: DONT_ASSIGN_TO_TREE, ASSIGN_TO_ROOT, IMPORT_RELATIONS, IMPORT_RELATIONS_ONLY
 
+     Additionally, import modes are supported for
+     - Config Groups(Tabs):DONT_ADD_FIELDS_IF_TAB_NOT_EMPTY, ADD_FIELDS_IF_TAB_NOT_EMPTY, REMOVE_DYN_FIELDS_BEFORE_IMP
+     - Fields: THROW_IF_EXIST, SKIP_IF_EXIST, UPDATE_IF_EXIST
+     - Menu Applications: UNASSING_ALL_MENU, MERGE_APP_ITEMS
+     - Imports: USE_EXIST, THROW_IF_EXIST
+     - Reports: USE_EXIST, THROW_IF_EXIST
+
      Currently, module dependencies are not supported (i.e. one module can't require another one to be installed).
      To archive this capability module developer should provide a list of dependencies in the module`s readme and rely 
      on the existence of certain entities (Trackor Types, Fields, etc).
