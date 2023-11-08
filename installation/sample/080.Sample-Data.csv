@@ -1,3 +1,0 @@
-column1,column2,column3
-"You can use CSV files to import data","CSV file name should be: <Order Number>.<Import Name>.csv","Import <Import Name> must be created on previous module installation steps"
-"Sample data can be skipped when installation.", "Sample data is useful for module overview, testing, development, demo, and other purposes.", "But usually not needed when the module is installed in the production environment."
