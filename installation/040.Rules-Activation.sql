@@ -33,7 +33,7 @@ begin
     end loop;
 
     for rec_autom in cur_autom_by_comp_package(c_component_package_name) loop
-        dbms_output.put_line('Ebabling automation [' || rec_autom.autom_name || ']' || pkg_str.c_lb);
+        dbms_output.put_line('Enabling automation [' || rec_autom.autom_name || ']' || pkg_str.c_lb);
 
         update autom set enabled = 1 where autom_id = rec_autom.autom_id;
 
