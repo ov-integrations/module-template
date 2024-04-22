@@ -25,19 +25,13 @@ jobs:
     steps:
       - name: Configure Git
         run: |
-          git config --replace-all user.name "$GIT_USERNAME"
-          git config --replace-all user.email "$GIT_EMAIL"
+          git config --global --replace-all user.name "$GIT_USERNAME"
+          git config --global --replace-all user.email "$GIT_EMAIL"
 
       - name: Clone source repository
-        run: |
-          git config --remove-section http.'https://github.com/'
-          git config --replace-all url.'https://${{ secrets.OV_SOURCE_REPOSITORY_PAT_READ_REPO }}@github.com'.insteadOf 'https://github.com'
-          git clone --bare 'https://github.com/${{ vars.OV_SOURCE_ORGANIZATION }}/${{ github.event.repository.name }}.git' "$OLD_REPOSITORY_DIR_NAME"
+        run: git clone --mirror 'https://${{ secrets.OV_SOURCE_REPOSITORY_PAT_READ_REPO }}@github.com/${{ vars.OV_SOURCE_ORGANIZATION }}/${{ github.event.repository.name }}.git' "$OLD_REPOSITORY_DIR_NAME"
 
-      - name: Push to mirror repository
+      - name: Update mirror repository
         run: |
-          git config --remove-section http.'https://github.com/'
-          git config --replace-all url.'https://${{ github.token }}@github.com'.insteadOf 'https://github.com'
-
           cd "$OLD_REPOSITORY_DIR_NAME"
-          git push --mirror '${{ github.event.repository.clone_url }}'
+          git push --mirror 'https://token:${{ github.token }}@github.com/${{ github.repository }}.git'
