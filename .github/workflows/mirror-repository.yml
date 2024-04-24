@@ -8,6 +8,9 @@ name: Mirror repository
 
 on:
   workflow_dispatch:
+#  Uncomment to automatically sync the repository on schedule
+#  schedule:
+#    - cron: "0 0 * * *"
 
 permissions:
   contents: write
