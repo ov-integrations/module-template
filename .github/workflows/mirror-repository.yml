@@ -1,7 +1,7 @@
 name: Mirror repository
 
 # Required secrets:
-# OV_SOURCE_REPOSITORY_PAT_READ_REPO - Personal access token which can be used to access private repositories
+# OV_SOURCE_REPOSITORY_PAT_READ_REPO - Personal access token, that can be used to access source private repository
 
 # Required variables:
 # OV_SOURCE_ORGANIZATION - Organization of source repositories
@@ -24,7 +24,6 @@ jobs:
   mirror_repository:
     name: Mirror repository
     runs-on: ubuntu-latest
-    if: vars.OV_SOURCE_ORGANIZATION != null && vars.OV_SOURCE_ORGANIZATION != ''
     steps:
       - name: Configure Git
         run: |
