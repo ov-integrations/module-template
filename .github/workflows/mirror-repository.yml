@@ -68,7 +68,7 @@ jobs:
 
           mirror_repository_auth = Auth.Token('${{ secrets.OV_MIRROR_REPOSITORY_PAT_WRITE_REPO }}')
           mirror_github = Github(auth=mirror_repository_auth)
-          mirror_repository = source_github.get_repo('${{ github.repository }}')
+          mirror_repository = mirror_github.get_repo('${{ github.repository }}')
           mirror_releases = list(mirror_repository.get_releases())
           mirror_release_names = list(map(format_release_name, mirror_releases))
           print('Mirror releases:', ', '.join(mirror_release_names))
