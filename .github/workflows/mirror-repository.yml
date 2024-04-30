@@ -84,6 +84,7 @@ jobs:
           def update_mirror_release_if_necessary(release: GitRelease):
               release_name = format_release_name(release)
               found_mirror_release = next(item for item in mirror_releases if format_release_name(item) == release_name)
+
               if found_mirror_release is not None and is_release_changed(release, found_mirror_release):
                   print(f'Updating release [{release_name}], release ID=[{found_mirror_release.id}]')
                   found_mirror_release.update_release(name=release.title,
@@ -96,6 +97,7 @@ jobs:
           for mirror_release in mirror_releases:
               if format_release_name(mirror_release) in source_release_names:
                   continue
+
               print(f'Deleting release with tag=[{mirror_release.tag_name}], release ID=[{mirror_release.id}]')
               mirror_release.delete_release()
 
