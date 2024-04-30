@@ -23,6 +23,6 @@ git push --mirror https://github.com/VizionHub/<repo_name>
    * the second token must have `Contents - Read and write` and `Workflows - Read and write` for the target reposiory (i.e. in the `VizionHub` org). Store token in the `OV_MIRROR_REPOSITORY_PAT_WRITE_REPO` action secret of the mirror repository created at step `1`.
 3. Set value for `OV_SOURCE_ORGANIZATION` action variable with the name of the source org, i.e. `ov-integrations`
 
-> Values of existing `VizionHub Mirror WF` and `VizionHub Mirror WF - write` tokens of the `ov-automation` account may be used for `OV_SOURCE_REPOSITORY_PAT_READ_REPO` and `OV_MIRROR_REPOSITORY_PAT_WRITE_REPO` accordingly if you have access to these tokens
+> Values of existing `VizionHub Mirror WF` and `VizionHub Mirror WF - write` PATs of the `ov-automation` account may be used for `OV_SOURCE_REPOSITORY_PAT_READ_REPO` and `OV_MIRROR_REPOSITORY_PAT_WRITE_REPO` accordingly.
 
    
