@@ -23,6 +23,7 @@ jobs:
   mirror_repository:
     name: Mirror repository
     runs-on: ubuntu-latest
+    if: vars.OV_SOURCE_ORGANIZATION != null && vars.OV_SOURCE_ORGANIZATION != ''
     steps:
       - name: Configure Git
         run: |
