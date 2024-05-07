@@ -31,7 +31,7 @@ jobs:
           git config --global --replace-all user.email "$GIT_EMAIL"
 
       - name: Clone source repository
-        run: git clone --mirror 'https://${{ secrets.OV_SOURCE_REPOSITORY_PAT_READ_REPO }}@github.com/${{ vars.OV_SOURCE_ORGANIZATION }}/${{ github.event.repository.name }}.git' "$OLD_REPOSITORY_DIR_NAME"
+        run: git clone --bare 'https://${{ secrets.OV_SOURCE_REPOSITORY_PAT_READ_REPO }}@github.com/${{ vars.OV_SOURCE_ORGANIZATION }}/${{ github.event.repository.name }}.git' "$OLD_REPOSITORY_DIR_NAME"
 
       - name: Update mirror repository
         run: |
