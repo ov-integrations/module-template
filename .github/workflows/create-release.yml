@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       create_release: ${{ steps.validate_issue_status.outputs.create_release }}
-      issue_ids_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
+      issue_rel_notes_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -68,14 +68,15 @@ jobs:
       - name: Validate Issue statuses
         id: validate_issue_status
         env:
-          ISSUE_IDS_FILE: issue_ids.txt
+          ISSUE_IDS_FILE: issue_ids.json
           CURL_RESPONSE_FILE: curl_response.txt
         run: |
           cat << 'EOF' > "$ISSUE_IDS_FILE"
           ${{ toJSON(steps.find_issue_ids.outputs) }}
           EOF
 
-          jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value' | while read ISSUE_ID
+          let COUNTER=0
+          cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value' | while read ISSUE_ID
           do
             curl \
               -H 'Authorization: Basic ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
@@ -84,35 +85,47 @@ jobs:
             ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
             ISSUE_STATUS="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_STATUS')"
             echo "$ISSUE_ID: $ISSUE_SUMMARY ($ISSUE_STATUS)"
-            echo "$ISSUE_ID=$ISSUE_SUMMARY" >> $GITHUB_OUTPUT
 
             if [[ "$ISSUE_STATUS" != "Completed" ]]; then
-              echo "::error::Wrong status, should be 'Completed'"
-              echo "create_release=false" >> $GITHUB_OUTPUT
+              echo "::error::Wrong Issue status, should be 'Completed'"
               exit 1
             fi
+
+            let COUNTER++
+            echo "issue_rel_notes_$COUNTER=$ISSUE_ID $ISSUE_SUMMARY" >> $GITHUB_OUTPUT
           done
 
           echo 'All issues have Completed status, allowing to create release'
-          echo "create_release=true" >> $GITHUB_OUTPUT
-          echo "Android-111111=Summary text" >> $GITHUB_OUTPUT
-          echo "Android-111112=Summary text" >> $GITHUB_OUTPUT
-          echo "Android-111113=Summary text" >> $GITHUB_OUTPUT
 
   create_release:
     name: Create release
     needs: find_and_validate_changes
-    if: needs.find_and_validate_changes.create_release == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Get next version
+        id: get_next_version
         run: |
-          
+          # TODO
+          echo "next_version=1.4" >> $GITHUB_OUTPUT
 
       - name: Format release notes
         id: format_release_notes
+        env:
+          ISSUE_REL_NOTES_FILE: issue_rel_notes.json
         run: |
+          cat << 'EOF' > "$ISSUE_REL_NOTES_FILE"
+          ${{ needs.find_and_validate_changes.outputs.issue_rel_notes_json }}
+          EOF
 
+          {
+            echo 'release_notes_body<<EOF'
+            echo 'What's Changed'
+            cat "$ISSUE_REL_NOTES_FILE" | jq -r 'to_entries[] | .value' | while read ISSUE_RELEASE_NOTES
+            do
+              echo "* $ISSUE_RELEASE_NOTES"
+            done
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Configure Git
         run: |
@@ -121,10 +134,11 @@ jobs:
 
       - name: Create tag
         run: |
-
+          git tag -a '${{ steps.get_next_version.outputs.next_version }}' -m 'Release: ${{ steps.get_next_version.outputs.next_version }}'
+          git push --tags origin
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.event.inputs.new_version }}
-          body: ${{ steps.format_release_notes.outputs.release_notes }}
+          body: ${{ steps.format_release_notes.outputs.release_notes_body }}
