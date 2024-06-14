@@ -12,7 +12,6 @@ on:
 env:
   GIT_USERNAME: 'ov-automation'
   GIT_EMAIL: 'github-actions@github.com'
-  MAIN_BRANCH_REF: origin/master
   TRACKOR_URL: https://trackor.onevizion.com
 
 jobs:
@@ -32,8 +31,8 @@ jobs:
         run: |
           LATEST_RELEASE_REF="$(curl 'https://api.github.com/repos/${{ github.repository }}/releases' -H 'Authorization: Bearer ${{ github.token }}' | jq -r 'first | .tag_name')"
           if [[ "$LATEST_RELEASE_REF" == "null" ]]; then
-            echo "No any release found, using first commit from $MAIN_BRANCH_REF. Will be initial release"
-            LATEST_RELEASE_REF="$(git rev-list --max-parents=0 "$MAIN_BRANCH_REF" | tail -n 1)"
+            echo "No any release found, using first commit from ${{ github.ref }}. Will be initial release"
+            LATEST_RELEASE_REF="$(git rev-list --max-parents=0 '${{ github.ref }}' | tail -n 1)"
           fi
 
           echo "Latest release ref: $LATEST_RELEASE_REF"
@@ -44,7 +43,7 @@ jobs:
         env:
           ISSUE_IDS_FILE: issue_ids.txt
         run: |
-          git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" "$MAIN_BRANCH_REF" | while read COMMIT_DESCRIPTION
+          git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" '${{ github.ref }}' | while read COMMIT_DESCRIPTION
           do
             COMMIT_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f2)"
             ISSUE_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f3 | awk '{ if (match($0, /[A-Za-z]{1,32}-[0-9]{1,7}/, m)) { print m[0]; exit }}')"
