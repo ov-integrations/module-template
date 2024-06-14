@@ -1,13 +1,19 @@
 name: Create release
 
+# Required secrets:
+# OV_TRACKOR_AUTOMATION_ACCESS_KEY - Access Key for trackor.onevizion.com
+# OV_TRACKOR_AUTOMATION_SECRET_KEY - Secret Key for trackor.onevizion.com
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * SAT"
+    - cron: 0 0 * * SAT
 
 env:
   GIT_USERNAME: 'ov-automation'
   GIT_EMAIL: 'github-actions@github.com'
+  MAIN_BRANCH_REF: origin/master
+  TRACKOR_URL: https://trackor.onevizion.com
 
 jobs:
   find_and_validate_changes:
@@ -17,15 +23,28 @@ jobs:
       create_release: ${{ steps.validate_issue_status.outputs.create_release }}
       issue_ids_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Find latest release
         id: find_latest_release
         run: |
-          echo "latest_release_ref=1.2.3" >> $GITHUB_OUTPUT
+          LATEST_RELEASE_REF="$(curl 'https://api.github.com/repos/${{ github.repository }}/releases' -H 'Authorization: Bearer ${{ github.token }}' | jq -r 'first | .tag_name')"
+          if [[ "$LATEST_RELEASE_REF" == "null" ]]; then
+            echo "No any release found, using first commit from $MAIN_BRANCH_REF. Will be initial release"
+            LATEST_RELEASE_REF="$(git rev-list --max-parents=0 "$MAIN_BRANCH_REF" | tail -n 1)"
+          fi
 
-      - name: Find commits
-        id: find_commit_ids
+          echo "Latest release ref: $LATEST_RELEASE_REF"
+          echo "latest_release_ref=$LATEST_RELEASE_REF" >> $GITHUB_OUTPUT
+
+      - name: Find Issue IDs
+        id: find_issue_ids
+        env:
+          ISSUE_IDS_FILE: issue_ids.txt
         run: |
-          git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" '${{ github.ref }}' | while read COMMIT_DESCRIPTION
+          git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" "$MAIN_BRANCH_REF" | while read COMMIT_DESCRIPTION
           do
             COMMIT_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f2)"
             ISSUE_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f3 | awk '{ if (match($0, /[A-Za-z]{1,32}-[0-9]{1,7}/, m)) { print m[0]; exit }}')"
@@ -36,19 +55,45 @@ jobs:
             fi
 
             echo "New changes: $COMMIT_ID ($ISSUE_ID)"
-
-            echo "commit_$COMMIT_ID_commit_id=$COMMIT_ID" >> $GITHUB_OUTPUT
-            echo "commit_$COMMIT_ID_issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
+            echo "$ISSUE_ID" >> "$ISSUE_IDS_FILE"
+          done
+          
+          let COUNTER=0
+          cat "$ISSUE_IDS_FILE" | sort | uniq | while read ISSUE_ID
+          do
+            let COUNTER++
+            echo "issue_id_$COUNTER=$ISSUE_ID" >> $GITHUB_OUTPUT
           done
 
       - name: Validate Issue statuses
         id: validate_issue_status
+        env:
+          ISSUE_IDS_FILE: issue_ids.txt
+          CURL_RESPONSE_FILE: curl_response.txt
         run: |
-          echo '${{ toJSON(steps.set_outputs.outputs) }}' 
-          | jq -r 'to_entries[] 
-          | "\(.key)=\(.value)"' 
-          >> $GITHUB_ENV
-          
+          cat << 'EOF' > "$ISSUE_IDS_FILE"
+          ${{ toJSON(steps.find_issue_ids.outputs) }}
+          EOF
+
+          jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value' | while read ISSUE_ID
+          do
+            curl \
+              -H 'Authorization: Basic ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
+              "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_STATUS&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
+
+            ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
+            ISSUE_STATUS="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_STATUS')"
+            echo "$ISSUE_ID: $ISSUE_SUMMARY ($ISSUE_STATUS)"
+            echo "$ISSUE_ID=$ISSUE_SUMMARY" >> $GITHUB_OUTPUT
+
+            if [[ "$ISSUE_STATUS" != "Completed" ]]; then
+              echo "::error::Wrong status, should be 'Completed'"
+              echo "create_release=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+          done
+
+          echo 'All issues have Completed status, allowing to create release'
           echo "create_release=true" >> $GITHUB_OUTPUT
           echo "Android-111111=Summary text" >> $GITHUB_OUTPUT
           echo "Android-111112=Summary text" >> $GITHUB_OUTPUT
@@ -65,6 +110,7 @@ jobs:
           
 
       - name: Format release notes
+        id: format_release_notes
         run: |
 
 
@@ -81,4 +127,4 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.event.inputs.new_version }}
-          body: 
+          body: ${{ steps.format_release_notes.outputs.release_notes }}
