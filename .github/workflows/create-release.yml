@@ -9,6 +9,9 @@ on:
   schedule:
     - cron: 0 0 * * SAT
 
+permissions:
+  contents: write
+
 env:
   GIT_USERNAME: 'ov-automation'
   GIT_EMAIL: 'github-actions@github.com'
