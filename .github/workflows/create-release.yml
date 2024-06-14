@@ -1,0 +1,84 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * SAT"
+
+env:
+  GIT_USERNAME: 'ov-automation'
+  GIT_EMAIL: 'github-actions@github.com'
+
+jobs:
+  find_and_validate_changes:
+    name: Find and validate changes
+    runs-on: ubuntu-latest
+    outputs:
+      create_release: ${{ steps.validate_issue_status.outputs.create_release }}
+      issue_ids_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
+    steps:
+      - name: Find latest release
+        id: find_latest_release
+        run: |
+          echo "latest_release_ref=1.2.3" >> $GITHUB_OUTPUT
+
+      - name: Find commits
+        id: find_commit_ids
+        run: |
+          git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" '${{ github.ref }}' | while read COMMIT_DESCRIPTION
+          do
+            COMMIT_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f2)"
+            ISSUE_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f3 | awk '{ if (match($0, /[A-Za-z]{1,32}-[0-9]{1,7}/, m)) { print m[0]; exit }}')"
+
+            if [ -z "$ISSUE_ID" ]; then
+              echo "No Issue ID in $COMMIT_DESCRIPTION"
+              continue
+            fi
+
+            echo "New changes: $COMMIT_ID ($ISSUE_ID)"
+
+            echo "commit_$COMMIT_ID_commit_id=$COMMIT_ID" >> $GITHUB_OUTPUT
+            echo "commit_$COMMIT_ID_issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
+          done
+
+      - name: Validate Issue statuses
+        id: validate_issue_status
+        run: |
+          echo '${{ toJSON(steps.set_outputs.outputs) }}' 
+          | jq -r 'to_entries[] 
+          | "\(.key)=\(.value)"' 
+          >> $GITHUB_ENV
+          
+          echo "create_release=true" >> $GITHUB_OUTPUT
+          echo "Android-111111=Summary text" >> $GITHUB_OUTPUT
+          echo "Android-111112=Summary text" >> $GITHUB_OUTPUT
+          echo "Android-111113=Summary text" >> $GITHUB_OUTPUT
+
+  create_release:
+    name: Create release
+    needs: find_and_validate_changes
+    if: needs.find_and_validate_changes.create_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get next version
+        run: |
+          
+
+      - name: Format release notes
+        run: |
+
+
+      - name: Configure Git
+        run: |
+          git config --global --replace-all user.name "$GIT_USERNAME"
+          git config --global --replace-all user.email "$GIT_EMAIL"
+
+      - name: Create tag
+        run: |
+
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.new_version }}
+          body: 
