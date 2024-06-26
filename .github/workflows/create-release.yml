@@ -37,6 +37,7 @@ jobs:
         run: |
           GIT_REF="${{ github.ref }}"
           GIT_BRANCH_NAME="${GIT_REF##refs/heads/}"
+          echo "Branch name: $GIT_BRANCH_NAME"
 
           LATEST_RELEASE_REF="$(curl --silent \
             --fail-with-body \
