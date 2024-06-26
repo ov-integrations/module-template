@@ -35,11 +35,14 @@ jobs:
       - name: Find latest release
         id: find_latest_release
         run: |
+          GIT_REF="${{ github.ref }}"
+          GIT_BRANCH_NAME="${GIT_REF##refs/heads/}"
+
           LATEST_RELEASE_REF="$(curl --silent \
             --fail-with-body \
             -H 'Authorization: Bearer ${{ github.token }}' \
             'https://api.github.com/repos/${{ github.repository }}/releases?per_page=1000' \
-            | jq -r --arg branchFilter '${{ github.ref }}' '[ sort_by(.created_at) | reverse | .[] | select( .target_commitish == $branchFilter ) ] | first | .tag_name')"
+            | jq -r --arg branchFilter "$GIT_BRANCH_NAME" '[ sort_by(.created_at) | reverse | .[] | select( .target_commitish == $branchFilter ) ] | first | .tag_name')"
 
           LATEST_RELEASE_REF_IS_TAG="true"
           if [[ "$LATEST_RELEASE_REF" == "null" ]]; then
