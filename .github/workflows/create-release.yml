@@ -130,7 +130,7 @@ jobs:
               echo "::error::Wrong $ISSUE_ID status ($ISSUE_STATUS), should be 'Completed' or 'Completion Review'"
               ALLOW_CREATE_RELEASE="0"
             fi
-          
+
             ISSUE_VERSION_MAJOR="$(echo "$ISSUE_VERSION" | cut -d'.' -f1)"
             MAX_MAJOR_VERSION="$(( ISSUE_VERSION_MAJOR > MAX_MAJOR_VERSION ? ISSUE_VERSION_MAJOR : MAX_MAJOR_VERSION ))"
 
