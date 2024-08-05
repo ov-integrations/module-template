@@ -138,7 +138,7 @@ jobs:
           done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
 
           if [ "$IS_HAVE_ISSUES" -eq 0 ]; then
-            echo '::notice::No issue IDs found in commits, check commit messages'
+            echo '::notice::No issue IDs are found in commits, check commit messages'
             exit 1
           elif [ "$ALLOW_CREATE_RELEASE" -eq 1 ]; then
             echo '::notice::All issues have Completed/Completion Review status, allowing to create release'
