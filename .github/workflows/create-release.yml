@@ -118,6 +118,7 @@ jobs:
               echo "::error::$ISSUE_ID have multiple versions assigned?"
               cat "$CURL_RESPONSE_FILE"
               ALLOW_CREATE_RELEASE="0"
+              continue
             fi
 
             ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
@@ -128,11 +129,13 @@ jobs:
             if [[ "$ISSUE_STATUS" != "Completed" ]] && [[ "$ISSUE_STATUS" != "Completion Review" ]]; then
               echo "::error::Wrong $ISSUE_ID status ($ISSUE_STATUS), should be 'Completed' or 'Completion Review'"
               ALLOW_CREATE_RELEASE="0"
+              continue
             fi
 
             if ! [[ "$ISSUE_VERSION" =~ ^[0-9]+\. ]]; then
               echo "::error::Wrong $ISSUE_ID version ($ISSUE_VERSION), should starts with number"
               ALLOW_CREATE_RELEASE="0"
+              continue
             fi
 
             ISSUE_VERSION_MAJOR="$(echo "$ISSUE_VERSION" | cut -d'.' -f1)"
