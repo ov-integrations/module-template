@@ -130,7 +130,13 @@ jobs:
               ALLOW_CREATE_RELEASE="0"
             fi
 
+            if ! [[ "$ISSUE_VERSION" =~ ^[0-9]+\. ]]; then
+              echo "::error::Wrong $ISSUE_ID version ($ISSUE_VERSION), should starts with number"
+              ALLOW_CREATE_RELEASE="0"
+            fi
+
             ISSUE_VERSION_MAJOR="$(echo "$ISSUE_VERSION" | cut -d'.' -f1)"
+
             MAX_MAJOR_VERSION="$(( ISSUE_VERSION_MAJOR > MAX_MAJOR_VERSION ? ISSUE_VERSION_MAJOR : MAX_MAJOR_VERSION ))"
 
             echo "issue_rel_notes_$COUNTER=[$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY" >> $GITHUB_OUTPUT
@@ -143,7 +149,7 @@ jobs:
           elif [ "$ALLOW_CREATE_RELEASE" -eq 1 ]; then
             echo '::notice::All issues have Completed/Completion Review status, allowing to create release'
           else
-            echo '::notice::Having issues with wrong status'
+            echo '::notice::Having issues with wrong status/version'
             exit 1
           fi
 
