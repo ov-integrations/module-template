@@ -22,6 +22,7 @@ jobs:
     name: Find and validate changes
     runs-on: ubuntu-latest
     outputs:
+      create_release: ${{ steps.validate_issue_status.outputs.create_release }}
       issue_rel_notes_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
       max_major_version_number: ${{ steps.validate_issue_status.outputs.max_major_version_number }}
       latest_release_ref: ${{ steps.find_latest_release.outputs.latest_release_ref }}
@@ -63,8 +64,11 @@ jobs:
         run: |
           rm -f "$ISSUE_IDS_FILE"
           
+          IS_HAVE_NEW_COMMITS="0"
+          
           while read COMMIT_DESCRIPTION
           do
+            IS_HAVE_NEW_COMMITS="1"
             COMMIT_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f2)"
             ISSUE_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f3 | awk '{ if (match($0, /[A-Za-z]{1,32}-[0-9]{1,7}/, m)) { print m[0]; exit }}')"
 
@@ -76,8 +80,12 @@ jobs:
             echo "New changes: $COMMIT_ID ($ISSUE_ID)"
             echo "$ISSUE_ID" >> "$ISSUE_IDS_FILE"
           done < <(git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" '${{ github.ref }}')
-
-          if [ -f "$ISSUE_IDS_FILE" ]; then
+          
+          echo "is_have_commits=$IS_HAVE_NEW_COMMITS" >> $GITHUB_OUTPUT
+          
+          if [ "$IS_HAVE_NEW_COMMITS" -eq 0 ]; then
+            echo '::notice::No new commits'
+          elif [ "$IS_HAVE_NEW_COMMITS" -eq 1 ] && [ -f "$ISSUE_IDS_FILE" ]; then
             COUNTER=1
             while read ISSUE_ID
             do
@@ -88,6 +96,7 @@ jobs:
 
       - name: Validate Issue statuses
         id: validate_issue_status
+        if: steps.find_issue_ids.outputs.is_have_commits == '1'
         env:
           ISSUE_IDS_FILE: issue_ids.json
           CURL_RESPONSE_FILE: curl_response.txt
@@ -148,11 +157,14 @@ jobs:
 
           if [ "$IS_HAVE_ISSUES" -eq 0 ]; then
             echo '::notice::No issue IDs are found in commits, check commit messages'
+            echo "create_release=0" >> $GITHUB_OUTPUT
             exit 1
           elif [ "$ALLOW_CREATE_RELEASE" -eq 1 ]; then
             echo '::notice::All issues have Completed/Completion Review status, allowing to create release'
+            echo "create_release=1" >> $GITHUB_OUTPUT
           else
             echo '::notice::Having issues with wrong status/version'
+            echo "create_release=0" >> $GITHUB_OUTPUT
             exit 1
           fi
 
@@ -163,6 +175,7 @@ jobs:
     name: Create release
     needs: find_and_validate_changes
     runs-on: ubuntu-latest
+    if: needs.find_and_validate_changes.outputs.create_release == '1'
     steps:
       - uses: actions/checkout@v4
         with:
