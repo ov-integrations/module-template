@@ -62,8 +62,13 @@ jobs:
         env:
           ISSUE_IDS_FILE: issue_ids.txt
         run: |
+          rm -f "$ISSUE_IDS_FILE"
+          
+          IS_HAVE_NEW_COMMITS="0"
+          
           while read COMMIT_DESCRIPTION
           do
+            IS_HAVE_NEW_COMMITS="1"
             COMMIT_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f2)"
             ISSUE_ID="$(echo "$COMMIT_DESCRIPTION" | cut -d' ' -f3 | awk '{ if (match($0, /[A-Za-z]{1,32}-[0-9]{1,7}/, m)) { print m[0]; exit }}')"
 
@@ -75,30 +80,43 @@ jobs:
             echo "New changes: $COMMIT_ID ($ISSUE_ID)"
             echo "$ISSUE_ID" >> "$ISSUE_IDS_FILE"
           done < <(git cherry -v "${{ steps.find_latest_release.outputs.latest_release_ref }}" '${{ github.ref }}')
-
-          COUNTER=1
-          while read ISSUE_ID
-          do
-            echo "issue_id_$COUNTER=$ISSUE_ID" >> $GITHUB_OUTPUT
-            (( COUNTER++ ))
-          done < <(cat "$ISSUE_IDS_FILE" | sort | uniq)
+          
+          echo "is_have_commits=$IS_HAVE_NEW_COMMITS" >> $GITHUB_OUTPUT
+          
+          if [ "$IS_HAVE_NEW_COMMITS" -eq 0 ]; then
+            echo '::notice::No new commits'
+          elif [ "$IS_HAVE_NEW_COMMITS" -eq 1 ] && [ -f "$ISSUE_IDS_FILE" ]; then
+            COUNTER=1
+            while read ISSUE_ID
+            do
+              echo "issue_id_$COUNTER=$ISSUE_ID" >> $GITHUB_OUTPUT
+              (( COUNTER++ ))
+            done < <(cat "$ISSUE_IDS_FILE" | sort | uniq)
+          fi
 
       - name: Validate Issue statuses
         id: validate_issue_status
+        if: steps.find_issue_ids.outputs.is_have_commits == '1'
         env:
           ISSUE_IDS_FILE: issue_ids.json
           CURL_RESPONSE_FILE: curl_response.txt
         run: |
+          set -x
           cat << 'EOF' > "$ISSUE_IDS_FILE"
           ${{ toJSON(steps.find_issue_ids.outputs) }}
           EOF
 
           export COUNTER=1
           export ALLOW_CREATE_RELEASE=1
+          export IS_HAVE_ISSUES=0
           export MAX_MAJOR_VERSION="1"
+
+          trap 'cat "$CURL_RESPONSE_FILE"' ERR
 
           while read ISSUE_ID
           do
+            IS_HAVE_ISSUES="1"
+
             curl --silent \
               --fail-with-body \
               -H 'Authorization: Bearer ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
@@ -109,6 +127,7 @@ jobs:
               echo "::error::$ISSUE_ID have multiple versions assigned?"
               cat "$CURL_RESPONSE_FILE"
               ALLOW_CREATE_RELEASE="0"
+              continue
             fi
 
             ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
@@ -119,19 +138,33 @@ jobs:
             if [[ "$ISSUE_STATUS" != "Completed" ]] && [[ "$ISSUE_STATUS" != "Completion Review" ]]; then
               echo "::error::Wrong $ISSUE_ID status ($ISSUE_STATUS), should be 'Completed' or 'Completion Review'"
               ALLOW_CREATE_RELEASE="0"
+              continue
             fi
-          
+
+            if ! [[ "$ISSUE_VERSION" =~ ^[0-9]+\. ]]; then
+              echo "::error::Wrong $ISSUE_ID version ($ISSUE_VERSION), should starts with number"
+              ALLOW_CREATE_RELEASE="0"
+              continue
+            fi
+
             ISSUE_VERSION_MAJOR="$(echo "$ISSUE_VERSION" | cut -d'.' -f1)"
+
             MAX_MAJOR_VERSION="$(( ISSUE_VERSION_MAJOR > MAX_MAJOR_VERSION ? ISSUE_VERSION_MAJOR : MAX_MAJOR_VERSION ))"
 
             echo "issue_rel_notes_$COUNTER=[$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY" >> $GITHUB_OUTPUT
             (( COUNTER++ ))
           done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
 
-          if [ "$ALLOW_CREATE_RELEASE" -eq 1 ]; then
+          if [ "$IS_HAVE_ISSUES" -eq 0 ]; then
+            echo '::notice::No issue IDs are found in commits, check commit messages'
+            echo "create_release=0" >> $GITHUB_OUTPUT
+            exit 1
+          elif [ "$ALLOW_CREATE_RELEASE" -eq 1 ]; then
             echo '::notice::All issues have Completed/Completion Review status, allowing to create release'
+            echo "create_release=1" >> $GITHUB_OUTPUT
           else
-            echo '::notice::Having issues with wrong status'
+            echo '::notice::Having issues with wrong status/version'
+            echo "create_release=0" >> $GITHUB_OUTPUT
             exit 1
           fi
 
@@ -142,6 +175,7 @@ jobs:
     name: Create release
     needs: find_and_validate_changes
     runs-on: ubuntu-latest
+    if: needs.find_and_validate_changes.outputs.create_release == '1'
     steps:
       - uses: actions/checkout@v4
         with:
