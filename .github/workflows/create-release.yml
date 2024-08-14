@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       create_release: ${{ steps.validate_issue_status.outputs.create_release }}
-      issue_rel_notes_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
+      issue_ids_json: ${{ toJSON(steps.validate_issue_status.outputs) }}
       max_major_version_number: ${{ steps.validate_issue_status.outputs.max_major_version_number }}
       latest_release_ref: ${{ steps.find_latest_release.outputs.latest_release_ref }}
       latest_release_ref_is_tag: ${{ steps.find_latest_release.outputs.latest_release_ref_is_tag }}
@@ -109,7 +109,7 @@ jobs:
           export COUNTER=1
           export ALLOW_CREATE_RELEASE=1
           export IS_HAVE_ISSUES=0
-          export MAX_MAJOR_VERSION="1"
+          export MAX_MAJOR_VERSION=1
 
           trap 'cat "$CURL_RESPONSE_FILE"' ERR
 
@@ -120,7 +120,7 @@ jobs:
             curl --silent \
               --fail-with-body \
               -H 'Authorization: Bearer ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
-              "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_STATUS,Version.TRACKOR_KEY&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
+              "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_STATUS,Version.TRACKOR_KEY&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
 
             ARRAY_LENGTH="$(cat "$CURL_RESPONSE_FILE" | jq -r 'length')"
             if [ "$ARRAY_LENGTH" -gt 1 ]; then
@@ -130,10 +130,9 @@ jobs:
               continue
             fi
 
-            ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
             ISSUE_STATUS="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_STATUS')"
             ISSUE_VERSION="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | ."Version.TRACKOR_KEY"')"
-            echo "$ISSUE_ID. Summary: [$ISSUE_SUMMARY], Status: [$ISSUE_STATUS], Version: [$ISSUE_VERSION]"
+            echo "$ISSUE_ID. Status: [$ISSUE_STATUS], Version: [$ISSUE_VERSION]"
 
             if [[ "$ISSUE_STATUS" != "Completed" ]] && [[ "$ISSUE_STATUS" != "Completion Review" ]]; then
               echo "::error::Wrong $ISSUE_ID status ($ISSUE_STATUS), should be 'Completed' or 'Completion Review'"
@@ -148,10 +147,9 @@ jobs:
             fi
 
             ISSUE_VERSION_MAJOR="$(echo "$ISSUE_VERSION" | cut -d'.' -f1)"
-
             MAX_MAJOR_VERSION="$(( ISSUE_VERSION_MAJOR > MAX_MAJOR_VERSION ? ISSUE_VERSION_MAJOR : MAX_MAJOR_VERSION ))"
 
-            echo "issue_rel_notes_$COUNTER=[$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY" >> $GITHUB_OUTPUT
+            echo "issue_id_$COUNTER=$ISSUE_ID" >> $GITHUB_OUTPUT
             (( COUNTER++ ))
           done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
 
@@ -212,24 +210,60 @@ jobs:
           echo "::notice::New version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Format release notes
-        id: format_release_notes
+      - name: Fetch and format release notes
+        id: fetch_and_format_release_notes
         env:
-          ISSUE_REL_NOTES_FILE: issue_rel_notes.json
+          ISSUE_IDS_FILE: issue_ids.json
+          CURL_RESPONSE_FILE: curl_response.txt
         run: |
-          cat << 'EOF' > "$ISSUE_REL_NOTES_FILE"
-          ${{ needs.find_and_validate_changes.outputs.issue_rel_notes_json }}
+          if [[ '${{ runner.debug }}' == '1' ]]; then
+            set -x
+          fi
+
+          cat << 'EOF' > "$ISSUE_IDS_FILE"
+          ${{ needs.find_and_validate_changes.outputs.issue_ids_json }}
           EOF
+
+          trap 'cat "$CURL_RESPONSE_FILE"' ERR
+
+          export NO_ISSUES_IN_REL_NOTES=1
+          
+          function echoerr() {
+            echo "$@" 1>&2
+          }
 
           {
             echo 'release_notes_body<<EOF'
             echo "What's Changed"
-            while read ISSUE_RELEASE_NOTES
+            while read ISSUE_ID
             do
-              echo "* $ISSUE_RELEASE_NOTES"
-            done < <(cat "$ISSUE_REL_NOTES_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_rel_notes_")) | .value')
+              echoerr "Fetching release notes for $ISSUE_ID"
+
+              curl --silent \
+                --fail-with-body \
+                -H 'Authorization: Bearer ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
+                "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_RELEASE_NOTES,VQS_IT_DONT_INCLUDE_IN_REL_NOTES&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
+
+              ISSUE_DONT_INCLUDE_IN_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_DONT_INCLUDE_IN_REL_NOTES')"
+              if [[ "$ISSUE_DONT_INCLUDE_IN_REL_NOTES" == "false" ]]; then
+                NO_ISSUES_IN_REL_NOTES=0
+              fi
+
+              ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
+              ISSUE_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_RELEASE_NOTES | sub("(?<escape>[\\`\\*_{}[\\]<>()#+-.!|]{1})"; "\\\(.escape)"; "g")')"
+              echoerr "$ISSUE_ID. Summary: [$ISSUE_SUMMARY], Rel notes escaped: [$ISSUE_REL_NOTES]"
+
+              # Two spaces at the end are required to have rel.notes properly rendered in VizionHub UI in platform
+              echo "* [$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY  " >> $GITHUB_OUTPUT
+              echo "_${ISSUE_REL_NOTES}_" >> $GITHUB_OUTPUT
+            done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
+          
+          if [ "$NO_ISSUES_IN_REL_NOTES" -eq 1 ]; then
+            echo 'No issues with Release notes. Discarding GitHub output'
+            echo '' > "$GITHUB_OUTPUT"
+          fi
 
       - name: Configure Git
         run: |
