@@ -101,7 +101,10 @@ jobs:
           ISSUE_IDS_FILE: issue_ids.json
           CURL_RESPONSE_FILE: curl_response.txt
         run: |
-          set -x
+          if [[ '${{ runner.debug }}' == '1' ]]; then
+            set -x
+          fi
+
           cat << 'EOF' > "$ISSUE_IDS_FILE"
           ${{ toJSON(steps.find_issue_ids.outputs) }}
           EOF
