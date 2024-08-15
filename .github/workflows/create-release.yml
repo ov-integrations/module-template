@@ -227,7 +227,7 @@ jobs:
           ${{ needs.find_and_validate_changes.outputs.issue_ids_json }}
           EOF
 
-          trap 'cat "$CURL_RESPONSE_FILE"' ERR
+          trap 'cat "$CURL_RESPONSE_FILE" 1>&2' ERR
 
           export NO_ISSUES_IN_REL_NOTES=1
           
