@@ -1,27 +1,11 @@
+/*Params are available to set before the installation/upgrade/uninstallation*/
 [{
-    "name" : "ServerImpId",
-    "typeId": 1,
+    "name" : "TestParam",
+    "typeId": 1, // 0, 1, 3, 8, 90, 150, 160, 170 (Text, Number, Yes/No, Password, SQL Query Selector, User Selector, Latitude, Longitude)
     "value": "",
-    "paramSql" : "",
-    "description" : "Import ID on the Telemetry server to send telemetry data for processing",
-    "isReadOnly" : true,
-    "isHidden" : false
-},
-{
-    "name" : "DomainName",
-    "typeId": 0,
-    "value": "trackor.onevizion.com",
-    "paramSql" : "",
-    "description" : "Domain name of the Telemetry server",
-    "isReadOnly" : true,
-    "isHidden" : false
-},
-{
-    "name" : "APIToken",
-    "typeId": 8,
-    "value": "",
-    "paramSql" : "",
-    "description" : "OneVizion API token to start import on the OneVizion instance set in the [DomainMame] parameter: <access_key>:<secret_key>",
-    "isReadOnly" : true,
-    "isHidden" : false
+    "paramSql" : "", // Custom SQL for dynamic values
+    "description" : "Some description for the parameter",
+    "isReadOnly" : true, // to control access after installation/upgrade 
+    "isHidden" : false // if true then it won't be displayed and skipped
+}
 }]
