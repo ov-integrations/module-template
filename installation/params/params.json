@@ -1,0 +1,27 @@
+[{
+    "name" : "ServerImpId",
+    "typeId": 1,
+    "value": "",
+    "paramSql" : "",
+    "description" : "Import ID on the Telemetry server to send telemetry data for processing",
+    "isReadOnly" : true,
+    "isHidden" : false
+},
+{
+    "name" : "DomainName",
+    "typeId": 0,
+    "value": "trackor.onevizion.com",
+    "paramSql" : "",
+    "description" : "Domain name of the Telemetry server",
+    "isReadOnly" : true,
+    "isHidden" : false
+},
+{
+    "name" : "APIToken",
+    "typeId": 8,
+    "value": "",
+    "paramSql" : "",
+    "description" : "OneVizion API token to start import on the OneVizion instance set in the [DomainMame] parameter: <access_key>:<secret_key>",
+    "isReadOnly" : true,
+    "isHidden" : false
+}]
