@@ -8,4 +8,4 @@
     "isReadOnly" : true, // to control access after installation/upgrade 
     "isHidden" : false // if true then it won't be displayed and skipped
 }
-}]
+]
