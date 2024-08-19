@@ -218,6 +218,7 @@ jobs:
         env:
           ISSUE_IDS_FILE: issue_ids.json
           CURL_RESPONSE_FILE: curl_response.txt
+          RELEASE_NOTES_BODY_FILE: release_notes_body.txt
         run: |
           if [[ '${{ runner.debug }}' == '1' ]]; then
             set -x
@@ -227,46 +228,48 @@ jobs:
           ${{ needs.find_and_validate_changes.outputs.issue_ids_json }}
           EOF
 
-          trap 'cat "$CURL_RESPONSE_FILE" 1>&2' ERR
+          trap 'cat "$CURL_RESPONSE_FILE"' ERR
 
           export NO_ISSUES_IN_REL_NOTES=1
           
-          function echoerr() {
-            echo "$@" 1>&2
-          }
+          echo "What's Changed" > "$RELEASE_NOTES_BODY_FILE"
 
-          {
-            echo 'release_notes_body<<EOF'
-            echo "What's Changed"
-            while read ISSUE_ID
-            do
-              echoerr "Fetching release notes for $ISSUE_ID"
+          while read ISSUE_ID
+          do
+            echo "Fetching release notes for $ISSUE_ID"
 
-              curl --silent \
-                --fail-with-body \
-                -H 'Authorization: Bearer ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
-                "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_RELEASE_NOTES,VQS_IT_DONT_INCLUDE_IN_REL_NOTES&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
+            curl --silent \
+              --fail-with-body \
+              -H 'Authorization: Bearer ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}:${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}' \
+              "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_RELEASE_NOTES,VQS_IT_DONT_INCLUDE_IN_REL_NOTES&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
 
-              ISSUE_DONT_INCLUDE_IN_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_DONT_INCLUDE_IN_REL_NOTES')"
-              if [[ "$ISSUE_DONT_INCLUDE_IN_REL_NOTES" == "false" ]]; then
-                NO_ISSUES_IN_REL_NOTES=0
-              fi
+            ISSUE_SKIP_IN_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_DONT_INCLUDE_IN_REL_NOTES')"
+            if [[ "$ISSUE_SKIP_IN_REL_NOTES" == "0" ]]; then
+              # At least one issue has Release notes
+              NO_ISSUES_IN_REL_NOTES=0
+            fi
 
-              ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
-              ISSUE_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_RELEASE_NOTES | sub("(?<escape>[\\`\\*_{}[\\]<>()#+-.!|]{1})"; "\\\(.escape)"; "g")')"
-              echoerr "$ISSUE_ID. Summary: [$ISSUE_SUMMARY], Rel notes escaped: [$ISSUE_REL_NOTES]"
+            ISSUE_SUMMARY="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_XITOR_NAME')"
+            ISSUE_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_RELEASE_NOTES | sub("(?<escape>[\\`\\*_{}[\\]<>()#+-.!|]{1})"; "\\\(.escape)"; "g")')"
+            echo "$ISSUE_ID. Summary: [$ISSUE_SUMMARY], Rel notes escaped: [$ISSUE_REL_NOTES]"
 
-              # Two spaces at the end are required to have rel.notes properly rendered in VizionHub UI in platform
-              echo "* [$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY  " >> $GITHUB_OUTPUT
-              echo "_${ISSUE_REL_NOTES}_" >> $GITHUB_OUTPUT
-            done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-          
+            ISSUE_REL_NOTES="$(echo "${ISSUE_REL_NOTES}" | awk '{if ($0 == "") {print "    "} else {print "    _" $0 "_"}}')"
+
+            # Two spaces at the end are required to have rel.notes properly rendered in VizionHub UI in platform
+            echo "* [$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY  " >> "$RELEASE_NOTES_BODY_FILE"
+            echo "${ISSUE_REL_NOTES}" >> "$RELEASE_NOTES_BODY_FILE"
+          done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
+
           if [ "$NO_ISSUES_IN_REL_NOTES" -eq 1 ]; then
-            echo 'No issues with Release notes. Discarding GitHub output'
-            echo '' > "$GITHUB_OUTPUT"
+            echo 'No issues with Release notes'
+            echo -e '' > "$RELEASE_NOTES_BODY_FILE"
           fi
+
+          echo "release_notes_body_json<<EOF" >> $GITHUB_OUTPUT
+          jq --rawfile data "$RELEASE_NOTES_BODY_FILE" '{body: $data}' <<< '{}' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          cat "$GITHUB_OUTPUT"
 
       - name: Configure Git
         run: |
@@ -282,4 +285,4 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.get_new_version.outputs.new_version }}
-          body: ${{ steps.format_release_notes.outputs.release_notes_body }}
+          body: ${{ fromJson(steps.fetch_and_format_release_notes.outputs.release_notes_body_json).body }}
