@@ -262,14 +262,12 @@ jobs:
 
           if [ "$NO_ISSUES_IN_REL_NOTES" -eq 1 ]; then
             echo 'No issues with Release notes'
-            echo -e '' > "$RELEASE_NOTES_BODY_FILE"
+            echo 'No changes to mention here' > "$RELEASE_NOTES_BODY_FILE"
           fi
 
           echo "release_notes_body_json<<EOF" >> $GITHUB_OUTPUT
           jq --rawfile data "$RELEASE_NOTES_BODY_FILE" '{body: $data}' <<< '{}' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          
-          cat "$GITHUB_OUTPUT"
 
       - name: Configure Git
         run: |
