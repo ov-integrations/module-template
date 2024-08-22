@@ -11,3 +11,5 @@ For example, prefixes like `VHMLMS_WC:` are nonsense for the `Worker Certificate
 At the same time, Trackor Types with the prefix `P:` will most likely fall during the installation since the chances that the customer already has Trackor Type with such a prefix are high. Thus, for the `Subscription Plan` Trackor Type, instead of `P:`, you should better use `SPlan:` or `SubsPlan:`.
 
 Use `<PREFIX>_PKG` format for the PL/SQL package names, and add an additional suffix when there is more than one package in the module.
+
+Use bind parameter `:p_module_id` to access current module id in SQL steps
