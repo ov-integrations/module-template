@@ -1,18 +1,17 @@
 ## Module Params
 Module-level param provides functionality to set user-defined, custom parameters in the Module Wizard.
 Supported types are:
-| ID  | Type |
+| Property  | Description |
 | ------------- | ------------- |
-| 0  | Text  |
-| 1  | Number  |
-| 3  | Yes/No  |
-| 8  | Password  |
-| 90  | SQL Query Selector  |
-| 150  | User Selector  |
-| 160  | Latitude  |
-| 170  | Longitude  |
+| name  | Parameter name that should be in CamelCase  |
+| typeId  | 0, 1, 3, 8, 90, 150, 160, 170 (Text, Number, Yes/No, Password, SQL Query Selector, User Selector, Latitude, Longitude)  |
+| value  | Empty or pre-defined value  |
+| paramSql  | SQL statement to interact with the user enviroment  |
+| description  | Description for the parameter |
+| isReadOnly  | Control modifying access after installation/upgrade   |
+| isHidden  | If true will not be displayed and skipped  |
 
-They can be accessible while installation/upgrade/uninstallation or after them through `util_module` functions or with `{ParamName}` so they can be generated dynamically inside of (md,xml,sql,csv) files.
+They can be accessible while installation/upgrade/uninstallation or after them through `util_module` functions or with `{ParamName}` placeholder so they can be generated dynamically inside of (md,xml,sql,csv) files.
 
 ```sql
 --- SQL Usage
