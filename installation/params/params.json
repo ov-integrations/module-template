@@ -1,10 +1,27 @@
-/*Params are available to set before the installation/upgrade/uninstallation*/
 [{
     "name" : "TestParam",
-    "typeId": 1, // 0, 1, 3, 8, 90, 150, 160, 170 (Text, Number, Yes/No, Password, SQL Query Selector, User Selector, Latitude, Longitude)
+    "typeId": 0,
     "value": "",
-    "paramSql" : "", // Custom SQL for dynamic values
+    "paramSql" : "", 
     "description" : "Some description for the parameter",
-    "isReadOnly" : true, // to control access after installation/upgrade 
-    "isHidden" : false // if true then it won't be displayed and skipped
+    "isReadOnly" : true,
+    "isHidden" : false
+},
+{
+    "name" : "ParamName",
+    "typeId": 1,
+    "value": "100",
+    "paramSql" : "", 
+    "description" : "Some description for the parameter",
+    "isReadOnly" : true,
+    "isHidden" : false
+},
+{
+    "name" : "DynamicTrackorType",
+    "typeId": 1,
+    "value": "",
+    "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0", 
+    "description" : "Choose Trackor Type dynamically from existing trackor types",
+    "isReadOnly" : true,
+    "isHidden" : false
 }]
