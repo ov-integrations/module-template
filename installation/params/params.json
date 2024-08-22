@@ -12,7 +12,7 @@
     "typeId": 1,
     "value": "100",
     "paramSql" : "", 
-    "description" : "Some description for the parameter",
+    "description" : "Max numbers of records",
     "isReadOnly" : true,
     "isHidden" : false
 },
