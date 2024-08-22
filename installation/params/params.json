@@ -18,7 +18,7 @@
 },
 {
     "name" : "DynamicTrackorType",
-    "typeId": 1,
+    "typeId": 90,
     "value": "",
     "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0", 
     "description" : "Choose Trackor Type dynamically from existing trackor types",
