@@ -1,5 +1,6 @@
 It is recommended to combine all related OneVizion configuration objects into the single `Components Package`.
 
+## Prefixing
 All configuration object names should be prefixed with the unique prefix to avoid naming collisions with existing configuration or installed modules during the deployment.
 Start prefix with `VHM` (VizionHub Module), i.e. `VHMBI` for the `BI Tables` module, `VHMREQ` for the `Requirements` module.
 
@@ -12,4 +13,5 @@ At the same time, Trackor Types with the prefix `P:` will most likely fall durin
 
 Use `<PREFIX>_PKG` format for the PL/SQL package names, and add an additional suffix when there is more than one package in the module.
 
-Use bind parameter `:p_module_id` to access current module id in SQL steps
+## SQL steps
+Use bind parameter `:p_module_id` to access the current module id in SQL steps
