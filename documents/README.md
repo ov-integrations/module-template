@@ -4,4 +4,4 @@ This directory can be used to store images/documents and access them in the read
 
 The result:
 
-![image](documents/1.png)
+![image](1.png)
