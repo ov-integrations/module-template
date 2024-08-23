@@ -30,6 +30,6 @@ util_module.get_module_param_val(:p_module_id, 'ParamName')
 
 ```CSV
 ---CSV Usage
-{VendorTrackorType} ID
-VHMBOS-{VendorTrackorType}
+{ParamName} ID
+VHM-{ParamName}
 ```
