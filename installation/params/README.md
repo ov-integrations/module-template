@@ -1,4 +1,4 @@
-## Module Params
+## Module Parameters
 Module-level param provides functionality to set user-defined, custom parameters in the Module Wizard and use them across the Module.
 
 | Property  | Description |
