@@ -1,5 +1,5 @@
 ## Module Params
-Module-level param provides functionality to set user-defined, custom parameters in the Module Wizard.
+Module-level param provides functionality to set user-defined, custom parameters in the Module Wizard and use it across the Module.
 
 | Property  | Description |
 | ------------- | ------------- |
