@@ -6,7 +6,7 @@ Module-level param provides functionality to set user-defined, custom parameters
 | name  | Parameter name that should be in CamelCase  |
 | typeId  | 0, 1, 3, 8, 90, 150, 160, 170 (Text, Number, Yes/No, Password, SQL Query Selector, User Selector, Latitude, Longitude)  |
 | value  | Empty or pre-defined value  |
-| paramSql  | SQL statement to interact with the user environment  |
+| paramSql  | SQL statement to interact with the user's environment  |
 | description  | Description for the parameter |
 | isReadOnly  | Control modifying access after installation/upgrade through GUI  |
 | isHidden  | If true will not be displayed and will be skipped  |
