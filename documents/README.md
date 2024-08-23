@@ -2,6 +2,6 @@ This directory can be used to store images or documents and access them in the r
 
 `![image](documents/{filename}.png)`
 
-The result:
+An example:
 
 ![image](1.png)
