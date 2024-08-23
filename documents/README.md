@@ -1,4 +1,4 @@
-This directory can be used to store images/documents and access them in the readme files using the relative path:
+This directory can be used to store images or documents and access them in the readme files using the relative path:
 
 `![image](documents/{filename}.png)`
 
