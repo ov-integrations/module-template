@@ -9,7 +9,7 @@ Module-level param provides functionality to set user-defined, custom parameters
 | paramSql  | SQL statement to interact with the user's environment  |
 | description  | Description for the parameter |
 | isReadOnly  | Control modifying access after installation/upgrade through GUI  |
-| isHidden  | If true will not be displayed and will be skipped  |
+| isHidden  | If true parameter will not be displayed and will be skipped  |
 
 They can be accessible while installation/upgrade/uninstallation or after them through GUI in the Module Parameters tab or with `util_module` functions or with `{ParamName}` placeholder inside of .MD, .XML, .SQL, .CSV files being replaced with the parameter actual value.
 
