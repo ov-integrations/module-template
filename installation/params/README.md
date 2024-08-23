@@ -28,8 +28,8 @@ util_module.get_module_param_val(:p_module_id, 'ParamName')
 <TRACKOR_TYPE>{ParamName}</TRACKOR_TYPE> 
 ``````
 
-```CSV
----CSV Usage
-{ParamName} ID
-VHM-{ParamName}
-```
+CSV Usage
+
+| {ParamName} ID |
+| --- |
+| VHM-{ParamName} |
