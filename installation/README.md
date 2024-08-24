@@ -1,4 +1,4 @@
-It is recommended to combine all related OneVizion configuration objects into the single `Components Package` and lock the package via the `locked_packages` property in the .integration file for proper maintenance and scalability.
+It is recommended to combine all related OneVizion configuration objects into one or multiple components packages. If certain components must be protected from changes, the components package may be locked via the `locked_packages` property in the .integration file.
 
 ## Prefixing
 All configuration object names should be prefixed with the unique prefix to avoid naming collisions with existing configuration or installed modules during the deployment.
