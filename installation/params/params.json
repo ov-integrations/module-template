@@ -20,7 +20,7 @@
     "name" : "DynamicTrackorType",
     "typeId": 90,
     "value": "",
-    "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0", 
+    "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0 order by xitor_type", 
     "description" : "Choose Trackor Type dynamically from existing trackor types",
     "isReadOnly" : true,
     "isHidden" : false
