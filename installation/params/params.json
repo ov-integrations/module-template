@@ -4,7 +4,7 @@
     "value": "",
     "paramSql" : "", 
     "description" : "Some description for the parameter",
-    "isReadOnly" : true,
+    "isReadOnly" : false,
     "isHidden" : false
 },
 {
@@ -13,8 +13,8 @@
     "value": "100",
     "paramSql" : "", 
     "description" : "Max numbers of records",
-    "isReadOnly" : true,
-    "isHidden" : false
+    "isReadOnly" : false,
+    "isHidden" : true
 },
 {
     "name" : "DynamicTrackorType",
