@@ -1,5 +1,6 @@
-It is recommended to combine all related OneVizion configuration objects into the single `Components Package`.
+It is recommended to combine all related OneVizion configuration objects into one or multiple components packages. If certain components must be protected from changes, the components package may be locked via the `locked_packages` property in the .integration file.
 
+## Prefixing
 All configuration object names should be prefixed with the unique prefix to avoid naming collisions with existing configuration or installed modules during the deployment.
 Start prefix with `VHM` (VizionHub Module), i.e. `VHMBI` for the `BI Tables` module, `VHMREQ` for the `Requirements` module.
 
@@ -11,3 +12,6 @@ For example, prefixes like `VHMLMS_WC:` are nonsense for the `Worker Certificate
 At the same time, Trackor Types with the prefix `P:` will most likely fall during the installation since the chances that the customer already has Trackor Type with such a prefix are high. Thus, for the `Subscription Plan` Trackor Type, instead of `P:`, you should better use `SPlan:` or `SubsPlan:`.
 
 Use `<PREFIX>_PKG` format for the PL/SQL package names, and add an additional suffix when there is more than one package in the module.
+
+## SQL steps
+Use bind parameter `:p_module_id` to access the current module id in SQL steps
