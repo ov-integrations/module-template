@@ -2,11 +2,23 @@ name: Create release
 description: 'Create release. Permission required: contents:write'
 inputs:
   ov_trackor_automation_access_key:
-    description: Access Key for trackor.onevizion.com
+    description: Access Key for OneTeam
     required: true
   ov_trackor_automation_secret_key:
-    description: Secret Key for trackor.onevizion.com
+    description: Secret Key for OneTeam
     required: true
+  trackor_url:
+    description: OneTeam URL to find related issues
+    required: true
+    default: 'https://trackor.onevizion.com'
+  git_username:
+    description: Git Username used to create tag
+    required: true
+    default: 'ov-automation'
+  git_email:
+    description: Git E-Mail used to create tag
+    required: true
+    default: 'github-actions@github.com'
 runs:
   using: composite
   steps:
@@ -108,7 +120,7 @@ runs:
           curl --silent \
             --fail-with-body \
             -H 'Authorization: Bearer ${{ inputs.ov_trackor_automation_access_key }}:${{ inputs.ov_trackor_automation_secret_key }}' \
-            "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_STATUS,Version.TRACKOR_KEY&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
+            '${{ inputs.trackor_url }}'"/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_STATUS,Version.TRACKOR_KEY&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
         
           ARRAY_LENGTH="$(cat "$CURL_RESPONSE_FILE" | jq -r 'length')"
           if [ "$ARRAY_LENGTH" -gt 1 ]; then
@@ -192,6 +204,7 @@ runs:
 
     - name: Fetch and format release notes
       id: fetch_and_format_release_notes
+      shell: bash
       if: steps.validate_issue_status.outputs.create_release == '1'
       env:
         ISSUE_IDS_FILE: issue_ids.json
@@ -219,7 +232,7 @@ runs:
           curl --silent \
             --fail-with-body \
             -H 'Authorization: Bearer ${{ inputs.ov_trackor_automation_access_key }}:${{ inputs.ov_trackor_automation_secret_key }}' \
-            "$TRACKOR_URL/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_RELEASE_NOTES,VQS_IT_DONT_INCLUDE_IN_REL_NOTES&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
+            '${{ inputs.trackor_url }}'"/api/v3/trackor_types/Issue/trackors?fields=VQS_IT_XITOR_NAME,VQS_IT_RELEASE_NOTES,VQS_IT_DONT_INCLUDE_IN_REL_NOTES&TRACKOR_KEY=$ISSUE_ID" > "$CURL_RESPONSE_FILE"
         
           ISSUE_SKIP_IN_REL_NOTES="$(cat "$CURL_RESPONSE_FILE" | jq -r 'first | .VQS_IT_DONT_INCLUDE_IN_REL_NOTES')"
           if [[ "$ISSUE_SKIP_IN_REL_NOTES" == "0" ]]; then
@@ -234,7 +247,7 @@ runs:
           ISSUE_REL_NOTES="$(echo "${ISSUE_REL_NOTES}" | awk '{if ($0 == "") {print "    "} else {print "    _" $0 "_"}}')"
         
           # Two spaces at the end are required to have rel.notes properly rendered in VizionHub UI in platform
-          echo "* [$ISSUE_ID]($TRACKOR_URL/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY  " >> "$RELEASE_NOTES_BODY_FILE"
+          echo "* [$ISSUE_ID]("'${{ inputs.trackor_url }}'"/trackor_types/Issue/trackors.do?key=$ISSUE_ID) $ISSUE_SUMMARY  " >> "$RELEASE_NOTES_BODY_FILE"
           echo "${ISSUE_REL_NOTES}" >> "$RELEASE_NOTES_BODY_FILE"
         done < <(cat "$ISSUE_IDS_FILE" | jq -r 'to_entries[] | select(.key | startswith("issue_id_")) | .value')
         
@@ -248,12 +261,14 @@ runs:
         echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Configure Git
+      shell: bash
       if: steps.validate_issue_status.outputs.create_release == '1'
       run: |
-        git config --global --replace-all user.name "$GIT_USERNAME"
-        git config --global --replace-all user.email "$GIT_EMAIL"
+        git config --global --replace-all user.name '${{ inputs.git_username }}'
+        git config --global --replace-all user.email '${{ inputs.git_email }}'
 
     - name: Create tag
+      shell: bash
       if: steps.validate_issue_status.outputs.create_release == '1'
       run: |
         git tag -a '${{ steps.get_new_version.outputs.new_version }}' -m 'Release: ${{ steps.get_new_version.outputs.new_version }}'
