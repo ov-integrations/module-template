@@ -9,10 +9,6 @@ inputs:
     required: true
 runs:
   using: composite
-  env:
-    GIT_USERNAME: 'ov-automation'
-    GIT_EMAIL: 'github-actions@github.com'
-    TRACKOR_URL: https://trackor.onevizion.com
   steps:
     - uses: actions/checkout@v4
       with:
