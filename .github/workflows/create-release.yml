@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create release
-        uses: ov-integrations/module-template/.github/actions/create-release@Depl-240619
+        uses: ov-integrations/module-template/.github/actions/create-release@master
         with:
           ov_trackor_automation_access_key: ${{ secrets.OV_TRACKOR_AUTOMATION_ACCESS_KEY }}
           ov_trackor_automation_secret_key: ${{ secrets.OV_TRACKOR_AUTOMATION_SECRET_KEY }}
