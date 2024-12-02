@@ -2,7 +2,8 @@
     "name" : "TestParam",
     "typeId": 0,
     "value": "",
-    "paramSql" : "", 
+    "paramSql" : "",
+    "orderNumber":1,
     "description" : "Some description for the parameter",
     "isReadOnly" : false,
     "isHidden" : false
@@ -11,7 +12,8 @@
     "name" : "ParamName",
     "typeId": 1,
     "value": "100",
-    "paramSql" : "", 
+    "paramSql" : "",
+    "orderNumber":2,
     "description" : "Max numbers of records",
     "isReadOnly" : false,
     "isHidden" : true
@@ -20,7 +22,8 @@
     "name" : "DynamicTrackorType",
     "typeId": 90,
     "value": "",
-    "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0 order by xitor_type", 
+    "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0 order by xitor_type",
+    "orderNumber":3,
     "description" : "Choose Trackor Type dynamically from existing trackor types",
     "isReadOnly" : true,
     "isHidden" : false
