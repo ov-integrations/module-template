@@ -6,6 +6,7 @@
     "orderNumber":1,
     "description" : "Some description for the parameter",
     "isReadOnly" : false,
+    "isRequired" : true,
     "isHidden" : false
 },
 {
@@ -15,6 +16,7 @@
     "paramSql" : "",
     "orderNumber":2,
     "description" : "Max numbers of records",
+    "isRequired" : false,
     "isReadOnly" : false,
     "isHidden" : true
 },
@@ -24,6 +26,7 @@
     "value": "",
     "paramSql" : "select xitor_type from xitor_type where is_static_definition = 0 order by xitor_type",
     "orderNumber":3,
+    "isRequired" : true,
     "description" : "Choose Trackor Type dynamically from existing trackor types",
     "isReadOnly" : true,
     "isHidden" : false
