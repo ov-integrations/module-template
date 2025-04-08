@@ -11,7 +11,6 @@
 # Required variables:
 # OV_EKS_SERVICE_NAMESPACE - Name of service namespace in K8S
 # OV_MODULES_LIBRARY_REPOSITORY_ACCOUNT - ModulesLibraryRepositoryAccount parameter value
-# OV_MODULE_TEST_ACTIONS_GIT_REF - module-test-actions Git reference (actions will be used from specified reference)
 # OV_NOTIF_SERVICE_CONFIG - {"smtp_host": "", "smtp_port": 0, "sender_email": "", "sender_user": "", "secure_method": "STARTTLS/SSL"}
 # OV_UI_TEST_DB_PASSWORD - Oracle schemas password in DB container
 # OV_UI_TEST_NODEGROUP_CONFIG - {"services": "", "db": "", "selenium-hub": "", "selenium-node": ""}
@@ -74,7 +73,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ov-integrations/module-test-actions
-          ref: ${{ vars.OV_MODULE_TEST_ACTIONS_GIT_REF }}
+          ref: v1
           path: module-test-actions
           token: ${{ secrets.OV_AUTOMATION_PAT_READ_PACKAGES }}
 
