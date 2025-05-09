@@ -1,23 +1,18 @@
 {
   "type": "object",
   "properties": {
-    "ovUrl": {
-      "type": "string",
-      "pattern": "^https://.*"
-    },
     "ovAccessKey": {
       "type": "string",
       "minLength": 20,
-      "maxLength": 20
+      "maxLength": 255
     },
     "ovSecretKey": {
       "type": "string",
-      "minLength": 70,
-      "maxLength": 70
+      "minLength": 20,
+      "maxLength": 255
     }
   },
   "required": [
-    "ovUrl",
     "ovAccessKey",
     "ovSecretKey"
   ]

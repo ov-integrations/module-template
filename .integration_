@@ -3,4 +3,4 @@ settings_file_name = settings.json
 default_schedule = 0 0 0/1 * * ?
 read_from_stdout = false
 locked_packages = your package name
-1.0 = [24.7.0,)
+1.0 = [25.2.0,)

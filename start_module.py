@@ -8,11 +8,9 @@ if 'Successfully installed' in installed_dependencies:
         'Module execution has to be terminated now to use installed libraries on the next scheduled launch.')
 
 import json
-import re
 from jsonschema import validate
-from onevizion import IntegrationLog, LogLevel
+from onevizion import ModuleLog, LogLevel
 from module import Module
-
 
 with open('settings.json', 'rb') as settings_file:
     settings_data = json.loads(settings_file.read().decode('utf-8'))
@@ -22,15 +20,15 @@ with open('settings_schema.json', 'rb') as settings_schema_file:
 
 try:
     validate(instance = settings_data, schema = data_schema)
-except Exception as exceptiion:
-    raise Exception(f'Incorrect value in the settings file\n{str(exceptiion)}') from exceptiion
+except Exception as e:
+    raise Exception(f'Incorrect value in the settings file\n{str(e)}') from e
 
 with open('ihub_parameters.json', 'rb') as module_run:
     module_run_data = json.loads(module_run.read().decode('utf-8'))
 
-module_log = IntegrationLog(
+module_log = ModuleLog(
     module_run_data['processId'], 
-    settings_data['ovUrl'], 
+    module_run_data['ovUrl'], 
     settings_data['ovAccessKey'], 
     settings_data['ovSecretKey'], 
     None, 

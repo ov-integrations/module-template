@@ -3,3 +3,5 @@
 *.iml
 *.ipr
 *.iws
+__pycache__/*
+ihub_parameters.json
