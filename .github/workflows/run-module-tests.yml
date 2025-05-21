@@ -6,12 +6,10 @@
 
 # Optional secrets:
 # OV_GOOGLE_MAPS_API_KEY - Google Maps API key
-# OV_NOTIF_SERVICE_SENDER_PASSWORD - notif_service SMTP password
 
 # Required variables:
 # OV_EKS_SERVICE_NAMESPACE - Name of service namespace in K8S
 # OV_MODULES_LIBRARY_REPOSITORY_ACCOUNT - ModulesLibraryRepositoryAccount parameter value
-# OV_NOTIF_SERVICE_CONFIG - {"smtp_host": "", "smtp_port": 0, "sender_email": "", "sender_user": "", "secure_method": "STARTTLS/SSL"}
 # OV_UI_TEST_DB_PASSWORD - Oracle schemas password in DB container
 # OV_UI_TEST_NODEGROUP_CONFIG - {"services": "", "db": "", "selenium-hub": "", "selenium-node": ""}
 # OV_UI_TEST_WEB_PASSWORD - VizionPlatform users password
@@ -116,12 +114,6 @@ jobs:
           ov_modules_library_repository_account: ${{ vars.OV_MODULES_LIBRARY_REPOSITORY_ACCOUNT }}
           ov_modules_library_token: ${{ secrets.OV_MODULES_LIBRARY_TOKEN }}
           ov_google_maps_api_key: ${{ secrets.OV_GOOGLE_MAPS_API_KEY }}
-          ov_notif_sender_password: ${{ secrets.OV_NOTIF_SERVICE_SENDER_PASSWORD }}
-          ov_notif_smtp_host: ${{ fromJSON(vars.OV_NOTIF_SERVICE_CONFIG).smtp_host }}
-          ov_notif_smtp_port: ${{ fromJSON(vars.OV_NOTIF_SERVICE_CONFIG).smtp_port }}
-          ov_notif_sender_email: ${{ fromJSON(vars.OV_NOTIF_SERVICE_CONFIG).sender_email }}
-          ov_notif_sender_user: ${{ fromJSON(vars.OV_NOTIF_SERVICE_CONFIG).sender_user }}
-          ov_notif_secure_method: ${{ fromJSON(vars.OV_NOTIF_SERVICE_CONFIG).secure_method }}
 
       - name: Run Selenium tests
         uses: ./module-test-actions/.github/actions/build-and-run-tests
