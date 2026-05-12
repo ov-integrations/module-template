@@ -61,40 +61,69 @@ IHUB_PARAMETERS_FILE = _HERE / "ihub_parameters.json"
 
 
 def install_dependencies() -> None:
-    """Install project dependencies using ``uv pip install``.
+    """Install project dependencies using ``uv pip install`` with fallback to ``pip``.
 
     Installs packages declared in ``pyproject.toml`` (the ``[project]
     dependencies`` table).  If any new packages are installed the process
     exits with code ``0`` so that the next scheduled run picks up the freshly
     installed libraries.
 
+    Tries ``uv`` first (modern, faster), falls back to ``pip`` if ``uv`` is not
+    available (for older iHub environments).
+
     Raises:
-        subprocess.CalledProcessError: If the ``uv`` invocation returns a
+        subprocess.CalledProcessError: If the installation command returns a
             non-zero exit code (package resolution or network failure).
-        FileNotFoundError: If ``uv`` is not on ``$PATH``.
     """
-    logger.info("Checking / installing dependencies via uv...")
-    result = subprocess.run(
-        ["uv", "pip", "install", "-e", ".", "--quiet"],
-        capture_output=True,
-        text=True,
-        check=True,
-        cwd=_HERE,
-    )
-    output = result.stdout.strip()
-    if output:
-        logger.debug("uv output: %s", output)
-
-    # uv emits "Installed N packages" when it actually installs something.
-    if "Installed" in output:
-        logger.warning(
-            "New packages were installed: %s. "
-            "Terminating so that the next scheduled launch uses them.",
-            output,
+    # Try uv first (modern, faster)
+    try:
+        logger.info("Checking / installing dependencies via uv...")
+        result = subprocess.run(
+            ["uv", "pip", "install", "-e", ".", "--quiet"],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=_HERE,
         )
-        sys.exit(0)
+        output = result.stdout.strip()
+        if output:
+            logger.debug("uv output: %s", output)
 
-    logger.info("All dependencies satisfied.")
+        # uv emits "Installed N packages" when it actually installs something
+        if "Installed" in output:
+            logger.warning(
+                "New packages were installed: %s. "
+                "Terminating so that the next scheduled launch uses them.",
+                output,
+            )
+            sys.exit(0)
+
+        logger.info("All dependencies satisfied.")
+        return
+
+    except FileNotFoundError:
+        # uv not available - fall back to pip
+        logger.info("uv not found, falling back to pip...")
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-e", ".", "--quiet"],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=_HERE,
+        )
+        output = result.stdout + result.stderr
+        if output:
+            logger.debug("pip output: %s", output.strip())
+
+        # pip emits "Successfully installed" when packages are installed
+        if "Successfully installed" in output:
+            logger.warning(
+                "New packages were installed via pip. "
+                "Terminating so that the next scheduled launch uses them."
+            )
+            sys.exit(0)
+
+        logger.info("All dependencies satisfied.")
 
 
 # ---------------------------------------------------------------------------

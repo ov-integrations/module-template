@@ -58,6 +58,42 @@ Copy and fill in `settings.json`:
 The values are validated against `settings_schema.json` at startup. The file
 **must not be committed** — it is listed in `.gitignore`.
 
+## Compatibility & Requirements
+
+### OneVizion iHub Environment
+
+| Component | Requirement | Notes |
+|-----------|-------------|-------|
+| **iHub version** | ≥ 24.7.0 (recommended) | Older versions may work but verify uv availability |
+| **Python** | ≥ 3.10 | Required for modern type hint syntax |
+| **uv or pip** | Either available | Module falls back to pip if uv not found |
+
+### Dependency Installation Fallback
+
+The template uses modern `uv` for dependency management but includes automatic fallback to `pip`:
+
+1. **Production iHub with uv**: Fast, modern dependency resolution
+2. **Older iHub without uv**: Falls back to `pip install` automatically
+3. **Development**: Recommended to use `uv` for best experience
+
+This ensures compatibility across different iHub environments without manual configuration.
+
+### Migrating Existing Modules
+
+If you have existing modules using `python_dependencies.txt` or `python_dependencies.ini`:
+
+**Option 1: Full Migration (Recommended)**
+1. Create `pyproject.toml` with dependencies from your `.txt`/`.ini` file
+2. Replace installation logic in entry point with template's `install_dependencies()`
+3. Adopt type hints, tests, and modern patterns incrementally
+
+**Option 2: Hybrid Approach**
+1. Keep your existing dependency file format
+2. Adopt testing framework and CI/CD from template
+3. Gradually refactor code style (type hints, docstrings)
+
+**Compatibility Note**: This template uses `start_module.py` as the entry point. Production modules often use `start_integration.py`. Either name works — choose based on your organization's convention.
+
 ## Running the module
 
 The iHub platform executes the module with:
