@@ -68,15 +68,20 @@ The values are validated against `settings_schema.json` at startup. The file
 | **Python** | ≥ 3.10 | Required for modern type hint syntax |
 | **uv or pip** | Either available | Module falls back to pip if uv not found |
 
-### Dependency Installation Fallback
+### Dependency Installation Strategy
 
-The template uses modern `uv` for dependency management but includes automatic fallback to `pip`:
+The module automatically handles dependencies with a smart fallback chain:
 
-1. **Production iHub with uv**: Fast, modern dependency resolution
-2. **Older iHub without uv**: Falls back to `pip install` automatically
-3. **Development**: Recommended to use `uv` for best experience
+1. **Try `uv`**: Fast, modern dependency resolution (if available in PATH)
+2. **Auto-install `uv`**: If not found, automatically installs to `~/.local/bin`
+3. **Fallback to `pip`**: If `uv` installation fails or no internet, uses standard `pip`
 
-This ensures compatibility across different iHub environments without manual configuration.
+This "try and auto-install" approach ensures:
+- ✅ Fast installation with `uv` when possible
+- ✅ Automatic setup without manual intervention
+- ✅ Works on any Linux distribution
+- ✅ No sudo required
+- ✅ Graceful degradation to `pip` if needed
 
 ### Migrating Existing Modules
 
