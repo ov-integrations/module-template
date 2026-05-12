@@ -1,9 +1,187 @@
 # module-template
 
-Template repository to create new modules
+Template repository for creating new OneVizion integration modules.
 
-For Python code follow [style guidelines](https://peps.python.org/pep-0008/)
+## Overview
 
-For configuration installation samples, review files in the `installation` directory
+This template provides the standard skeleton for a Python-based OneVizion
+integration module.  It includes:
 
-Make sure to rename `.integration_` file to `.integration` for module to be available in the list in UI
+- `module.py` — the class that holds your integration logic
+- `start_module.py` — the entry-point script executed by the iHub platform
+- `settings.json` — user-supplied configuration (URL, API keys)
+- `settings_schema.json` — JSON Schema that validates `settings.json`
+- `pyproject.toml` — modern Python project config (dependencies, tooling)
+- `tests/` — pytest suite with fixtures covering core functionality
+
+## Quick start
+
+### Prerequisites
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Python | ≥ 3.10 | Runtime |
+| [uv](https://docs.astral.sh/uv/) | ≥ 0.3 | Dependency management |
+| [ruff](https://docs.astral.sh/ruff/) | ≥ 0.5 | Linting and formatting |
+
+Install `uv` (if not already present):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Clone and set up
+
+```bash
+# Clone the repository (or use it as a template on GitHub)
+git clone https://github.com/ov-integrations/module-template.git my-module
+cd my-module
+
+# Create a virtual environment and install all dependencies
+uv venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+uv pip install -e ".[dev]"
+```
+
+### Configure settings
+
+Copy and fill in `settings.json`:
+
+```json
+{
+  "ovUrl": "https://your-org.onevizion.com",
+  "ovAccessKey": "<20-character access key>",
+  "ovSecretKey": "<70-character secret key>"
+}
+```
+
+The values are validated against `settings_schema.json` at startup. The file
+**must not be committed** — it is listed in `.gitignore`.
+
+## Running the module
+
+The iHub platform executes the module with:
+
+```bash
+python3 start_module.py
+```
+
+Before running locally you must also provide `ihub_parameters.json` (injected
+automatically by iHub in production):
+
+```json
+{
+  "processId": 12345,
+  "logLevel": "INFO"
+}
+```
+
+> `ihub_parameters.json` is in `.gitignore` and must never be committed.
+
+## Development workflow
+
+### Linting and formatting
+
+```bash
+# Check for violations (zero tolerance)
+ruff check .
+
+# Auto-fix fixable violations
+ruff check --fix .
+
+# Format all Python files
+ruff format .
+```
+
+### Running tests
+
+```bash
+# Run the full suite with coverage (80% minimum enforced)
+pytest
+
+# Run only unit tests (no filesystem I/O)
+pytest -m unit
+
+# Run integration tests
+pytest -m integration
+
+# Generate an HTML coverage report
+pytest --cov-report=html
+open htmlcov/index.html
+```
+
+### Type checking
+
+```bash
+mypy module.py start_module.py
+```
+
+## Project structure
+
+```
+module-template/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml               # Lint, type-check, and test on every PR
+│       ├── create-release.yml   # Automated release workflow
+│       └── run-module-tests.yml # Full UI/integration test suite
+├── documents/                   # Images and docs referenced in READMEs
+├── installation/                # OneVizion installation XML and SQL scripts
+├── tests/
+│   ├── conftest.py              # Shared pytest fixtures
+│   ├── test_module.py           # Unit tests for module.py
+│   └── test_start_module.py     # Unit + integration tests for start_module.py
+├── uninstallation/              # Cleanup SQL scripts
+├── .gitignore
+├── .integration_                # Rename to .integration to enable UI listing
+├── module.py                    # Integration business logic (edit this)
+├── pyproject.toml               # Project metadata, dependencies, tool config
+├── README.md
+├── settings.json                # Runtime config (not committed)
+├── settings_schema.json         # JSON Schema for settings validation
+└── start_module.py              # Entry-point (rarely needs editing)
+```
+
+## Implementing a module
+
+1. Open `module.py`.
+2. Replace the body of `Module.start()` with your integration logic.
+3. Add any helper methods as private methods (prefixed with `_`).
+4. Add fields to `settings.json` and update `settings_schema.json` to validate them.
+5. Write tests in `tests/test_module.py`.
+
+```python
+# Example: extended Module.start()
+def start(self) -> None:
+    url = self._settings["ovUrl"]
+    self._module_log.add(LogLevel.INFO, f"Connecting to {url}")
+    # ... your logic here
+```
+
+## Configuration reference
+
+### settings.json
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ovUrl` | string | Base URL of your OneVizion instance, must start with `https://` |
+| `ovAccessKey` | string | 20-character API access key |
+| `ovSecretKey` | string | 70-character API secret key |
+
+### .integration_ file
+
+Rename `.integration_` to `.integration` to make the module visible in the
+OneVizion iHub UI module list.
+
+## Python style guidelines
+
+This project follows [PEP 8](https://peps.python.org/pep-0008/) and is
+enforced by `ruff`.  Key conventions:
+
+- All public functions and classes must have Google-style docstrings.
+- All function signatures must carry type hints.
+- Use `pathlib.Path` for all filesystem paths.
+- Prefer `with` context managers for all file/resource handling.
+- Specific exception types with clear messages; never bare `except:`.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.

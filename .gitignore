@@ -1,5 +1,47 @@
+# IDE
 .shelf
 .idea
 *.iml
 *.ipr
 *.iws
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# uv
+uv.lock
+
+# Testing & coverage
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# OneVizion runtime file (contains secrets - never commit)
+ihub_parameters.json

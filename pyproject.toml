@@ -1,0 +1,129 @@
+[project]
+name = "module-template"
+version = "1.0.0"
+description = "OneVizion integration module template"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "jsonschema>=4.4.0",
+    "onevizion>=1.1.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff configuration
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["."]
+
+[tool.ruff.lint]
+# Enable a broad, opinionated rule set.
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "ANN",  # flake8-annotations
+    "S",    # flake8-bandit (security)
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # flake8-eradicate (commented-out code)
+    "PL",   # pylint
+    "RUF",  # ruff-specific rules
+    "LOG",  # flake8-logging
+    "G",    # flake8-logging-format
+    "TRY",  # tryceratops (exception hygiene)
+]
+ignore = [
+    "TRY003",  # Avoid specifying long messages outside the exception class (we want clear error messages here)
+    "ANN401",  # typing.Any is acceptable for generic JSON return types
+    "TRY401",  # logging.exception already captures the traceback; explicit arg is intentional for clarity
+    "S607",    # Starting a process with a partial executable path (sys.executable is trusted)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["module"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # assert statements are fine in tests
+    "ANN",     # no need for full annotations in test helpers
+    "PLR2004", # magic values are acceptable in tests
+    "SIM117",  # allow nested with statements in tests for clarity
+    "SLF001",  # accessing private members in tests is intentional
+    "TC003",   # no need to move Path to TYPE_CHECKING in tests
+    "F401",    # imports used for side effects or re-exported in test fixtures
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ---------------------------------------------------------------------------
+# Pytest configuration
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    "--cov=.",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-fail-under=80",
+]
+markers = [
+    "unit: pure unit tests with no I/O",
+    "integration: tests that touch the filesystem or network",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+# ---------------------------------------------------------------------------
+# Mypy configuration
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
