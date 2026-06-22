@@ -65,13 +65,13 @@ jobs:
           echo "UI_TEST_PROCESS_NAME=[module] $MODULE_NAME (#$SUFFIX)" >> "$GITHUB_ENV"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout module-test-actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ov-integrations/module-test-actions
-          ref: v1
+          ref: Test-244286-232761
           path: module-test-actions
           token: ${{ secrets.OV_AUTOMATION_PAT_READ_PACKAGES }}
 
@@ -147,13 +147,13 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout module-test-actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ov-integrations/module-test-actions
-          ref: ${{ vars.OV_MODULE_TEST_ACTIONS_GIT_REF }}
+          ref: Test-244286-232761
           path: module-test-actions
           token: ${{ secrets.OV_AUTOMATION_PAT_READ_PACKAGES }}
 
