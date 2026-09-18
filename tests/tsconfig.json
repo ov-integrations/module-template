@@ -1,0 +1,3 @@
+{
+  "extends": "@ov-integrations/playwright-framework/tsconfig.base.json"
+}
