@@ -3,3 +3,10 @@
 *.iml
 *.ipr
 *.iws
+
+/tests/node_modules/
+/tests/test-results/
+/tests/playwright-report/
+/tests/blob-report/
+/tests/playwright/.cache/
+/tests/playwright/.auth/
